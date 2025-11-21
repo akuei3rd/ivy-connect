@@ -250,17 +250,17 @@ const Queue = () => {
   };
 
   return (
-    <div className="min-h-screen gradient-ivy flex flex-col px-4 py-8">
+    <div className="min-h-screen gradient-dark flex flex-col px-4 py-8">
       <div className="max-w-4xl mx-auto w-full space-y-6">
         {/* Header */}
         <div className="flex justify-between items-center">
-          <Button variant="ghost" onClick={() => navigate("/profile")}>
+          <Button variant="ghost" onClick={() => navigate("/home")}>
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Profile
+            Home
           </Button>
           <div className="flex items-center gap-2">
-            <Sparkles className="w-6 h-6 text-gold" />
-            <h1 className="text-2xl font-bold font-serif text-gradient">
+            <Sparkles className="w-6 h-6 text-foreground" />
+            <h1 className="text-2xl font-display font-bold text-gradient">
               ProTV
             </h1>
           </div>
@@ -269,7 +269,7 @@ const Queue = () => {
 
         {/* Queue Status */}
         <div className="bg-card/50 backdrop-blur-sm p-6 rounded-2xl shadow-card border border-border/50 text-center">
-          <Users className="w-12 h-12 text-gold mx-auto mb-3" />
+          <Users className="w-12 h-12 text-foreground mx-auto mb-3" />
           <h2 className="text-3xl font-bold mb-2">{queueCount}</h2>
           <p className="text-muted-foreground">
             {queueCount === 1 ? "Person" : "People"} in Queue
@@ -334,9 +334,8 @@ const Queue = () => {
             </div>
 
             <Button
-              variant="hero"
               size="lg"
-              className="w-full"
+              className="w-full bg-foreground text-background hover:bg-foreground/90 shadow-glow"
               onClick={enterQueue}
             >
               <Sparkles className="w-5 h-5 mr-2" />
@@ -345,9 +344,9 @@ const Queue = () => {
           </div>
         ) : (
           <div className="bg-card/50 backdrop-blur-sm p-8 rounded-2xl shadow-card border border-border/50 space-y-6 animate-scale-in text-center">
-            <Loader2 className="w-16 h-16 text-gold mx-auto animate-spin" />
+            <Loader2 className="w-16 h-16 text-foreground mx-auto animate-spin" />
             <div>
-              <h2 className="text-2xl font-bold font-serif mb-2">
+              <h2 className="text-2xl font-display font-bold mb-2">
                 Finding Your Match...
               </h2>
               <p className="text-muted-foreground">

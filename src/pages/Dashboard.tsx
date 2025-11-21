@@ -92,15 +92,20 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen gradient-ivy p-4">
+    <div className="min-h-screen gradient-dark p-4">
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex justify-between items-center">
-          <h1 className="text-4xl font-bold text-gradient">Dashboard</h1>
-          <Button variant="outline" onClick={handleSignOut}>
-            <LogOut className="w-4 h-4 mr-2" />
-            Sign Out
-          </Button>
+          <h1 className="text-4xl font-display font-bold text-gradient">Dashboard</h1>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => navigate("/home")}>
+              Home
+            </Button>
+            <Button variant="outline" onClick={handleSignOut}>
+              <LogOut className="w-4 h-4 mr-2" />
+              Sign Out
+            </Button>
+          </div>
         </div>
 
         {/* Profile Card */}
@@ -121,7 +126,10 @@ const Dashboard = () => {
               </p>
               <p className="text-sm text-muted-foreground">{profile.school}</p>
             </div>
-            <Button variant="hero" onClick={() => navigate("/queue")}>
+            <Button 
+              className="bg-foreground text-background hover:bg-foreground/90 shadow-glow"
+              onClick={() => navigate("/queue")}
+            >
               <Video className="w-4 h-4 mr-2" />
               Start Matching
             </Button>
@@ -132,8 +140,8 @@ const Dashboard = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card className="bg-card/50 backdrop-blur-sm border-border/50 p-6">
             <div className="flex items-center gap-3">
-              <div className="p-3 bg-primary/20 rounded-lg">
-                <Users className="w-6 h-6 text-gold" />
+              <div className="p-3 bg-foreground/10 rounded-lg">
+                <Users className="w-6 h-6 text-foreground" />
               </div>
               <div>
                 <p className="text-2xl font-bold">{connections.length}</p>
@@ -144,8 +152,8 @@ const Dashboard = () => {
 
           <Card className="bg-card/50 backdrop-blur-sm border-border/50 p-6">
             <div className="flex items-center gap-3">
-              <div className="p-3 bg-primary/20 rounded-lg">
-                <Video className="w-6 h-6 text-gold" />
+              <div className="p-3 bg-foreground/10 rounded-lg">
+                <Video className="w-6 h-6 text-foreground" />
               </div>
               <div>
                 <p className="text-2xl font-bold">{matchCount}</p>
@@ -156,8 +164,8 @@ const Dashboard = () => {
 
           <Card className="bg-card/50 backdrop-blur-sm border-border/50 p-6">
             <div className="flex items-center gap-3">
-              <div className="p-3 bg-primary/20 rounded-lg">
-                <User className="w-6 h-6 text-gold" />
+              <div className="p-3 bg-foreground/10 rounded-lg">
+                <User className="w-6 h-6 text-foreground" />
               </div>
               <div>
                 <p className="text-2xl font-bold">

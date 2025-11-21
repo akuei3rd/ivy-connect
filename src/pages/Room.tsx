@@ -305,7 +305,7 @@ const Room = () => {
   };
 
   return (
-    <div className="min-h-screen gradient-ivy flex flex-col p-4">
+    <div className="min-h-screen gradient-dark flex flex-col p-4">
       <div className="max-w-7xl mx-auto w-full flex-1 flex gap-4">
         {/* Main Video Area */}
         <div className="flex-1 flex flex-col gap-4">
@@ -313,7 +313,7 @@ const Room = () => {
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-4">
               <div className="bg-card/50 backdrop-blur-sm px-4 py-2 rounded-lg border border-border/50 flex items-center gap-2">
-                <Clock className="w-5 h-5 text-gold" />
+                <Clock className="w-5 h-5 text-foreground" />
                 <span className="text-xl font-bold font-mono">
                   {formatTime(timeLeft)}
                 </span>
@@ -366,7 +366,11 @@ const Room = () => {
               Report User
             </Button>
 
-            <Button variant="hero" size="lg" onClick={handleNext}>
+            <Button 
+              size="lg"
+              className="bg-foreground text-background hover:bg-foreground/90 shadow-glow"
+              onClick={handleNext}
+            >
               <SkipForward className="w-5 h-5 mr-2" />
               Next Match
             </Button>
