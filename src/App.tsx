@@ -9,6 +9,7 @@ import Profile from "./pages/Profile";
 import Queue from "./pages/Queue";
 import Room from "./pages/Room";
 import Dashboard from "./pages/Dashboard";
+import Home from "./pages/Home";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,6 +23,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/home" element={<Home />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/queue" element={<Queue />} />

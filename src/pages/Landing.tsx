@@ -12,7 +12,7 @@ const Landing = () => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       if (session) {
-        navigate("/profile");
+        navigate("/home");
       }
     });
 
@@ -21,7 +21,7 @@ const Landing = () => {
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       if (session) {
-        navigate("/profile");
+        navigate("/home");
       }
     });
 

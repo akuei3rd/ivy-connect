@@ -107,10 +107,10 @@ const Profile = () => {
 
       toast({
         title: "Profile saved!",
-        description: "Your profile has been updated successfully",
+        description: hasProfile ? "Your profile has been updated successfully" : "Welcome to ProTV!",
       });
 
-      navigate("/queue");
+      setTimeout(() => navigate(hasProfile ? "/home" : "/home"), 1000);
     } catch (error: any) {
       toast({
         title: "Error",
@@ -269,9 +269,9 @@ const Profile = () => {
                   type="button"
                   variant="outline"
                   className="w-full"
-                  onClick={() => navigate("/queue")}
+                  onClick={() => navigate("/home")}
                 >
-                  Go to Matchmaking
+                  Back to Home
                 </Button>
               )}
             </div>
