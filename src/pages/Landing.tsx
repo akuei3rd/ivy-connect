@@ -29,9 +29,16 @@ const Landing = () => {
   }, [navigate]);
 
   return (
-    <div className="min-h-screen gradient-ivy flex flex-col">
+    <div className="min-h-screen relative overflow-hidden flex flex-col">
+      {/* Animated background */}
+      <div className="absolute inset-0 gradient-ivy">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '0s', animationDuration: '4s' }}></div>
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-accent/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s', animationDuration: '6s' }}></div>
+        <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s', animationDuration: '5s' }}></div>
+      </div>
+      
       {/* Hero Section */}
-      <div className="flex-1 flex items-center justify-center px-4 py-12">
+      <div className="flex-1 flex items-center justify-center px-4 py-12 relative z-10">
         <div className="max-w-4xl mx-auto text-center space-y-8 animate-fade-in">
           {/* Logo/Brand */}
           <div className="space-y-2">
@@ -103,7 +110,7 @@ const Landing = () => {
       </div>
 
       {/* Footer */}
-      <footer className="py-6 text-center text-sm text-muted-foreground border-t border-border/30">
+      <footer className="py-6 text-center text-sm text-muted-foreground border-t border-border/30 relative z-10">
         <p>© 2025 ProTV. Connecting the Ivy League.</p>
       </footer>
     </div>
