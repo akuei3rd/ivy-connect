@@ -14,6 +14,65 @@ export type Database = {
   }
   public: {
     Tables: {
+      chat_messages: {
+        Row: {
+          created_at: string | null
+          id: string
+          match_id: string
+          message: string
+          sender_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          match_id: string
+          message: string
+          sender_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          match_id?: string
+          message?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      connections: {
+        Row: {
+          created_at: string | null
+          id: string
+          status: string
+          updated_at: string | null
+          user1_id: string
+          user2_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          status?: string
+          updated_at?: string | null
+          user1_id: string
+          user2_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          status?: string
+          updated_at?: string | null
+          user1_id?: string
+          user2_id?: string
+        }
+        Relationships: []
+      }
       matches: {
         Row: {
           created_at: string | null

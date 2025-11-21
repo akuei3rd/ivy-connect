@@ -8,6 +8,7 @@ import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
 import Queue from "./pages/Queue";
 import Room from "./pages/Room";
+import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,6 +23,7 @@ const App = () => (
           <Route path="/" element={<Landing />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/queue" element={<Queue />} />
           <Route path="/room/:roomId" element={<Room />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
