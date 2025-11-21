@@ -14,8 +14,8 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ['Inter', 'sans-serif'],
-        serif: ['Playfair Display', 'serif'],
+        sans: ['Urbanist', 'sans-serif'],
+        display: ['Outfit', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -51,11 +51,13 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        'ivy-green-dark': "hsl(var(--ivy-green-dark))",
-        'ivy-green': "hsl(var(--ivy-green))",
-        'ivy-green-light': "hsl(var(--ivy-green-light))",
-        gold: "hsl(var(--gold))",
-        'gold-light': "hsl(var(--gold-light))",
+        'grey-darker': "hsl(var(--grey-darker))",
+        'grey-dark': "hsl(var(--grey-dark))",
+        'grey-medium': "hsl(var(--grey-medium))",
+        'grey-light': "hsl(var(--grey-light))",
+        'grey-lighter': "hsl(var(--grey-lighter))",
+        'pure-white': "hsl(var(--pure-white))",
+        'pure-black': "hsl(var(--pure-black))",
       },
       borderRadius: {
         lg: "var(--radius)",

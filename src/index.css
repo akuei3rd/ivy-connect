@@ -8,51 +8,56 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 150 25% 8%;
-    --foreground: 45 20% 96%;
+    --background: 0 0% 7%;
+    --foreground: 0 0% 98%;
 
-    --card: 150 20% 12%;
-    --card-foreground: 45 20% 96%;
+    --card: 0 0% 10%;
+    --card-foreground: 0 0% 98%;
 
-    --popover: 150 20% 12%;
-    --popover-foreground: 45 20% 96%;
+    --popover: 0 0% 10%;
+    --popover-foreground: 0 0% 98%;
 
-    --primary: 150 50% 28%;
-    --primary-foreground: 45 20% 96%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 7%;
 
-    --secondary: 150 30% 18%;
-    --secondary-foreground: 45 20% 96%;
+    --secondary: 0 0% 15%;
+    --secondary-foreground: 0 0% 98%;
 
-    --muted: 150 15% 15%;
-    --muted-foreground: 45 10% 65%;
+    --muted: 0 0% 18%;
+    --muted-foreground: 0 0% 65%;
 
-    --accent: 45 80% 55%;
-    --accent-foreground: 150 25% 8%;
+    --accent: 0 0% 25%;
+    --accent-foreground: 0 0% 98%;
 
     --destructive: 0 65% 50%;
-    --destructive-foreground: 45 20% 96%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 150 20% 20%;
-    --input: 150 20% 20%;
-    --ring: 150 50% 35%;
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+    --ring: 0 0% 50%;
 
     --radius: 0.75rem;
 
-    /* Custom Ivy League colors */
-    --ivy-green-dark: 150 60% 15%;
-    --ivy-green: 150 50% 28%;
-    --ivy-green-light: 150 40% 40%;
-    --gold: 45 80% 55%;
-    --gold-light: 45 70% 65%;
+    /* Custom monochrome colors */
+    --grey-darker: 0 0% 12%;
+    --grey-dark: 0 0% 18%;
+    --grey-medium: 0 0% 35%;
+    --grey-light: 0 0% 65%;
+    --grey-lighter: 0 0% 85%;
+    --pure-white: 0 0% 100%;
+    --pure-black: 0 0% 0%;
     
     /* Gradients */
-    --gradient-ivy: linear-gradient(135deg, hsl(150 60% 15%), hsl(150 50% 28%));
-    --gradient-gold: linear-gradient(135deg, hsl(45 80% 55%), hsl(45 70% 65%));
-    --gradient-hero: linear-gradient(180deg, hsl(150 25% 8%), hsl(150 30% 12%));
+    --gradient-dark: linear-gradient(135deg, hsl(0 0% 7%), hsl(0 0% 12%));
+    --gradient-grey: linear-gradient(135deg, hsl(0 0% 18%), hsl(0 0% 25%));
+    --gradient-shimmer: linear-gradient(90deg, hsl(0 0% 15%), hsl(0 0% 25%), hsl(0 0% 15%));
+    --gradient-hero: linear-gradient(180deg, hsl(0 0% 7%), hsl(0 0% 10%));
     
     /* Shadows */
-    --shadow-glow: 0 0 40px hsl(150 50% 28% / 0.3);
-    --shadow-card: 0 10px 30px -10px hsl(150 60% 15% / 0.5);
+    --shadow-glow: 0 0 60px hsl(0 0% 100% / 0.1);
+    --shadow-card: 0 20px 40px -15px hsl(0 0% 0% / 0.7);
+    --shadow-subtle: 0 2px 8px hsl(0 0% 0% / 0.3);
+    --shadow-heavy: 0 30px 60px -20px hsl(0 0% 0% / 0.9);
   }
 }
 
@@ -72,15 +77,20 @@ All colors MUST be HSL.
 
 @layer utilities {
   .text-gradient {
-    @apply bg-gradient-to-r from-gold to-gold-light bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-grey-lighter to-pure-white bg-clip-text text-transparent;
   }
   
-  .gradient-ivy {
-    background: var(--gradient-ivy);
+  .gradient-dark {
+    background: var(--gradient-dark);
   }
   
-  .gradient-gold {
-    background: var(--gradient-gold);
+  .gradient-grey {
+    background: var(--gradient-grey);
+  }
+  
+  .gradient-shimmer {
+    background: var(--gradient-shimmer);
+    background-size: 200% 100%;
   }
   
   .shadow-glow {
@@ -90,6 +100,14 @@ All colors MUST be HSL.
   .shadow-card {
     box-shadow: var(--shadow-card);
   }
+  
+  .shadow-subtle {
+    box-shadow: var(--shadow-subtle);
+  }
+  
+  .shadow-heavy {
+    box-shadow: var(--shadow-heavy);
+  }
 }
 
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap');
