@@ -42,11 +42,22 @@ const Auth = () => {
 
         if (error) throw error;
 
+        const { data: profileData } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", (await supabase.auth.getSession()).data.session?.user.id)
+          .single();
+
         toast({
           title: "Welcome back!",
           description: "Successfully signed in",
         });
-        navigate("/profile");
+
+        if (!profileData) {
+          navigate("/profile");
+        } else {
+          navigate("/home");
+        }
       } else {
         const { error } = await supabase.auth.signUp({
           email,
