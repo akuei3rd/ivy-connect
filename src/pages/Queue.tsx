@@ -45,6 +45,13 @@ const Queue = () => {
     };
   }, []);
 
+  // Ensure video stream is attached when video element is ready
+  useEffect(() => {
+    if (streamRef.current && videoRef.current && videoEnabled) {
+      videoRef.current.srcObject = streamRef.current;
+    }
+  }, [videoEnabled, inQueue]);
+
   const startVideo = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ 
@@ -52,10 +59,8 @@ const Queue = () => {
         audio: false 
       });
       streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-      }
       setVideoEnabled(true);
+      // Video element will receive stream via useEffect
     } catch (error) {
       console.error('Error accessing camera:', error);
       toast({
@@ -63,6 +68,7 @@ const Queue = () => {
         description: "Please allow camera access to use ProTV",
         variant: "destructive",
       });
+      throw error;
     }
   };
 
