@@ -1,17 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Sparkles, ArrowLeft, Users, Loader2 } from "lucide-react";
+import { Sparkles, ArrowLeft, Users, Video, VideoOff } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 const IVY_SCHOOLS = [
@@ -38,12 +31,51 @@ const Queue = () => {
     schools: [] as string[],
     classYears: [] as string[],
   });
+  const [videoEnabled, setVideoEnabled] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
 
   useEffect(() => {
     checkAuth();
     subscribeToQueue();
     subscribeToMatches();
+    
+    return () => {
+      stopVideo();
+    };
   }, []);
+
+  const startVideo = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { width: 1280, height: 720 }, 
+        audio: false 
+      });
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+      setVideoEnabled(true);
+    } catch (error) {
+      console.error('Error accessing camera:', error);
+      toast({
+        title: "Camera Access Denied",
+        description: "Please allow camera access to use ProTV",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const stopVideo = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
+    setVideoEnabled(false);
+  };
 
   const checkAuth = async () => {
     const {
@@ -150,6 +182,9 @@ const Queue = () => {
 
   const enterQueue = async () => {
     try {
+      // Start video first
+      await startVideo();
+      
       const { error } = await supabase.from("queue").insert([{
         user_id: userId!,
         school_filter: filters.schools.length > 0 ? filters.schools as any : null,
@@ -232,6 +267,7 @@ const Queue = () => {
 
   const leaveQueue = async () => {
     await supabase.from("queue").delete().eq("user_id", userId);
+    stopVideo();
     setInQueue(false);
     toast({
       title: "Left Queue",
@@ -250,58 +286,49 @@ const Queue = () => {
   };
 
   return (
-    <div className="min-h-screen gradient-dark flex flex-col px-4 py-8">
-      <div className="max-w-4xl mx-auto w-full space-y-6">
-        {/* Header */}
-        <div className="flex justify-between items-center">
-          <Button variant="ghost" onClick={() => navigate("/home")}>
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Home
-          </Button>
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-6 h-6 text-foreground" />
-            <h1 className="text-2xl font-display font-bold text-gradient">
-              ProTV
-            </h1>
-          </div>
-          <div className="w-24" />
+    <div className="min-h-screen gradient-dark flex flex-col">
+      {/* Header */}
+      <div className="flex justify-between items-center px-8 py-6 backdrop-blur-sm bg-background/50 border-b border-border/50">
+        <Button variant="ghost" onClick={() => navigate("/home")} className="hover:bg-accent/50">
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Home
+        </Button>
+        <div className="flex items-center gap-3">
+          <Sparkles className="w-8 h-8 text-foreground" />
+          <h1 className="text-3xl font-display font-bold text-gradient tracking-tight">
+            ProTV
+          </h1>
         </div>
-
-        {/* Queue Status */}
-        <div className="bg-card/50 backdrop-blur-sm p-6 rounded-2xl shadow-card border border-border/50 text-center">
-          <Users className="w-12 h-12 text-foreground mx-auto mb-3" />
-          <h2 className="text-3xl font-bold mb-2">{queueCount}</h2>
-          <p className="text-muted-foreground">
-            {queueCount === 1 ? "Person" : "People"} in Queue
-          </p>
+        <div className="flex items-center gap-2 bg-card/50 px-4 py-2 rounded-full border border-border/50">
+          <Users className="w-5 h-5 text-muted-foreground" />
+          <span className="text-lg font-bold">{queueCount}</span>
+          <span className="text-sm text-muted-foreground">online</span>
         </div>
+      </div>
 
-        {/* Main Content */}
-        {!inQueue ? (
-          <div className="bg-card/50 backdrop-blur-sm p-8 rounded-2xl shadow-card border border-border/50 space-y-6 animate-scale-in">
+      {/* Main Content */}
+      {!inQueue ? (
+        <div className="flex-1 flex items-center justify-center p-8">
+          <div className="max-w-2xl w-full bg-card/50 backdrop-blur-sm p-12 rounded-3xl shadow-heavy border border-border/50 space-y-8 animate-scale-in">
             <div className="text-center">
-              <h2 className="text-2xl font-bold font-serif mb-2">
+              <h2 className="text-4xl font-display font-bold mb-3 text-gradient">
                 Find Your Match
               </h2>
-              <p className="text-muted-foreground">
-                Filter by preferences or match with anyone
+              <p className="text-lg text-muted-foreground">
+                Connect with fellow Ivy League students instantly
               </p>
             </div>
 
             {/* Filters */}
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label>Filter by School (Optional)</Label>
-                <div className="grid grid-cols-2 gap-2">
+            <div className="space-y-6">
+              <div className="space-y-3">
+                <Label className="text-base font-medium">Filter by School (Optional)</Label>
+                <div className="grid grid-cols-2 gap-3">
                   {IVY_SCHOOLS.map((school) => (
                     <Badge
                       key={school}
-                      variant={
-                        filters.schools.includes(school)
-                          ? "default"
-                          : "outline"
-                      }
-                      className="cursor-pointer justify-center py-2 hover:scale-105 transition-transform"
+                      variant={filters.schools.includes(school) ? "default" : "outline"}
+                      className="cursor-pointer justify-center py-3 text-sm hover:scale-105 transition-all duration-200"
                       onClick={() => toggleFilter("schools", school)}
                     >
                       {school.split(" ")[0]}
@@ -310,21 +337,15 @@ const Queue = () => {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label>Filter by Class Year (Optional)</Label>
-                <div className="grid grid-cols-3 gap-2">
+              <div className="space-y-3">
+                <Label className="text-base font-medium">Filter by Class Year (Optional)</Label>
+                <div className="grid grid-cols-3 gap-3">
                   {CLASS_YEARS.map((year) => (
                     <Badge
                       key={year}
-                      variant={
-                        filters.classYears.includes(year.toString())
-                          ? "default"
-                          : "outline"
-                      }
-                      className="cursor-pointer justify-center py-2 hover:scale-105 transition-transform"
-                      onClick={() =>
-                        toggleFilter("classYears", year.toString())
-                      }
+                      variant={filters.classYears.includes(year.toString()) ? "default" : "outline"}
+                      className="cursor-pointer justify-center py-3 text-sm hover:scale-105 transition-all duration-200"
+                      onClick={() => toggleFilter("classYears", year.toString())}
                     >
                       {year}
                     </Badge>
@@ -335,46 +356,100 @@ const Queue = () => {
 
             <Button
               size="lg"
-              className="w-full bg-foreground text-background hover:bg-foreground/90 shadow-glow"
+              className="w-full h-14 bg-foreground text-background hover:bg-foreground/90 shadow-glow text-lg font-semibold transition-all duration-300 hover:scale-105"
               onClick={enterQueue}
             >
-              <Sparkles className="w-5 h-5 mr-2" />
-              Enter Queue
+              <Sparkles className="w-6 h-6 mr-2" />
+              Start Matching
             </Button>
           </div>
-        ) : (
-          <div className="bg-card/50 backdrop-blur-sm p-8 rounded-2xl shadow-card border border-border/50 space-y-6 animate-scale-in text-center">
-            <Loader2 className="w-16 h-16 text-foreground mx-auto animate-spin" />
-            <div>
-              <h2 className="text-2xl font-display font-bold mb-2">
-                Finding Your Match...
-              </h2>
-              <p className="text-muted-foreground">
-                This usually takes just a few seconds
-              </p>
-            </div>
-
-            {filters.schools.length > 0 && (
-              <div>
-                <p className="text-sm text-muted-foreground mb-2">
-                  Filtering by schools:
-                </p>
-                <div className="flex flex-wrap gap-2 justify-center">
-                  {filters.schools.map((school) => (
-                    <Badge key={school} variant="outline">
-                      {school.split(" ")[0]}
-                    </Badge>
-                  ))}
-                </div>
+        </div>
+      ) : (
+        <div className="flex-1 grid grid-cols-2 gap-0 p-8">
+          {/* User Video */}
+          <div className="relative bg-grey-darker rounded-3xl overflow-hidden shadow-heavy border border-border/50">
+            {videoEnabled ? (
+              <video
+                ref={videoRef}
+                autoPlay
+                playsInline
+                muted
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-grey-darker to-grey-dark">
+                <VideoOff className="w-24 h-24 text-muted-foreground" />
               </div>
             )}
-
-            <Button variant="destructive" onClick={leaveQueue}>
-              Leave Queue
-            </Button>
+            <div className="absolute bottom-6 left-6 bg-background/80 backdrop-blur-md px-4 py-2 rounded-full border border-border/50">
+              <p className="text-sm font-medium">You</p>
+            </div>
           </div>
-        )}
-      </div>
+
+          {/* Matching Loader */}
+          <div className="relative bg-gradient-to-br from-grey-darker via-grey-dark to-background rounded-3xl overflow-hidden shadow-heavy border border-border/50 flex items-center justify-center">
+            {/* Animated Background */}
+            <div className="absolute inset-0 bg-gradient-shimmer animate-shimmer opacity-20" />
+            
+            {/* Spinning ProTV Logo */}
+            <div className="relative z-10 flex flex-col items-center gap-8">
+              <div className="relative">
+                {/* Outer rotating ring */}
+                <div className="absolute inset-0 animate-spin" style={{ animationDuration: '3s' }}>
+                  <div className="w-48 h-48 rounded-full border-4 border-transparent border-t-foreground/30 border-r-foreground/30" />
+                </div>
+                
+                {/* Middle rotating ring */}
+                <div className="absolute inset-4 animate-spin" style={{ animationDuration: '2s', animationDirection: 'reverse' }}>
+                  <div className="w-40 h-40 rounded-full border-4 border-transparent border-b-foreground/50 border-l-foreground/50" />
+                </div>
+                
+                {/* Inner rotating ring */}
+                <div className="absolute inset-8 animate-spin" style={{ animationDuration: '1.5s' }}>
+                  <div className="w-32 h-32 rounded-full border-4 border-transparent border-t-foreground/70" />
+                </div>
+                
+                {/* Center logo */}
+                <div className="relative w-48 h-48 flex items-center justify-center">
+                  <div className="text-center">
+                    <Sparkles className="w-16 h-16 mx-auto mb-2 text-foreground animate-pulse" />
+                    <h3 className="text-3xl font-display font-bold text-gradient">ProTV</h3>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="text-center space-y-2">
+                <h2 className="text-2xl font-display font-bold">Finding Your Match</h2>
+                <p className="text-muted-foreground">Connecting you with someone amazing...</p>
+                
+                {filters.schools.length > 0 && (
+                  <div className="pt-4">
+                    <p className="text-sm text-muted-foreground mb-2">Filtering by:</p>
+                    <div className="flex flex-wrap gap-2 justify-center">
+                      {filters.schools.map((school) => (
+                        <Badge key={school} variant="outline" className="text-xs">
+                          {school.split(" ")[0]}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            {/* Leave Queue Button */}
+            <div className="absolute bottom-6 left-1/2 -translate-x-1/2">
+              <Button 
+                variant="destructive" 
+                onClick={leaveQueue}
+                className="px-6 py-2 shadow-glow"
+              >
+                Leave Queue
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
