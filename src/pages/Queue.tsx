@@ -185,6 +185,9 @@ const Queue = () => {
       // Start video first
       await startVideo();
       
+      // First, delete any existing queue entry for this user to avoid unique constraint violation
+      await supabase.from("queue").delete().eq("user_id", userId);
+      
       const { error } = await supabase.from("queue").insert([{
         user_id: userId!,
         school_filter: filters.schools.length > 0 ? filters.schools as any : null,
@@ -207,6 +210,7 @@ const Queue = () => {
       // Try to match immediately
       await tryMatch();
     } catch (error: any) {
+      stopVideo();
       toast({
         title: "Error",
         description: error.message,
