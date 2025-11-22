@@ -644,6 +644,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "fk_session_registrations_user"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "session_registrations_session_id_fkey"
             columns: ["session_id"]
             isOneToOne: false
