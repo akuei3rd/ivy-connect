@@ -18,6 +18,21 @@ const IVY_SCHOOLS = [
   "University of Pennsylvania",
 ];
 
+const MAJORS = [
+  "Computer Science",
+  "Engineering",
+  "Business",
+  "Economics",
+  "Biology",
+  "Mathematics",
+  "Psychology",
+  "Political Science",
+  "English",
+  "History",
+  "Physics",
+  "Chemistry",
+];
+
 const CURRENT_YEAR = new Date().getFullYear();
 const CLASS_YEARS = Array.from({ length: 6 }, (_, i) => CURRENT_YEAR + i - 1);
 
@@ -30,6 +45,7 @@ const Queue = () => {
   const [filters, setFilters] = useState({
     schools: [] as string[],
     classYears: [] as string[],
+    majors: [] as string[],
   });
   const [videoEnabled, setVideoEnabled] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -108,6 +124,7 @@ const Queue = () => {
       setFilters({
         schools: queueEntry.school_filter || [],
         classYears: queueEntry.class_year_filter?.map(String) || [],
+        majors: queueEntry.major_filter || [],
       });
     }
 
@@ -201,6 +218,7 @@ const Queue = () => {
           filters.classYears.length > 0
             ? filters.classYears.map(Number)
             : null,
+        major_filter: filters.majors.length > 0 ? filters.majors as any : null,
         status: "waiting",
       }]);
 
@@ -288,7 +306,7 @@ const Queue = () => {
     });
   };
 
-  const toggleFilter = (type: "schools" | "classYears", value: string) => {
+  const toggleFilter = (type: "schools" | "classYears" | "majors", value: string) => {
     setFilters((prev) => {
       const array = prev[type];
       const newArray = array.includes(value)
@@ -361,6 +379,22 @@ const Queue = () => {
                       onClick={() => toggleFilter("classYears", year.toString())}
                     >
                       {year}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <Label className="text-base font-medium">Filter by Major (Optional)</Label>
+                <div className="grid grid-cols-3 gap-3">
+                  {MAJORS.map((major) => (
+                    <Badge
+                      key={major}
+                      variant={filters.majors.includes(major) ? "default" : "outline"}
+                      className="cursor-pointer justify-center py-3 text-sm hover:scale-105 transition-all duration-200"
+                      onClick={() => toggleFilter("majors", major)}
+                    >
+                      {major}
                     </Badge>
                   ))}
                 </div>
