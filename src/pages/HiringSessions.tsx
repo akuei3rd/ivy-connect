@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar, Clock, Users, Building2, Video } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
+import { AppHeader } from "@/components/AppHeader";
 
 export default function HiringSessions() {
   const [sessions, setSessions] = useState<any[]>([]);
@@ -42,11 +43,10 @@ export default function HiringSessions() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+      <AppHeader title="Hiring Sessions" showBackButton backTo="/home" />
+      
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-foreground mb-2">Hiring Sessions</h1>
-          <p className="text-muted-foreground">Connect with employers through live video interviews</p>
-        </div>
+        <p className="text-muted-foreground mb-6">Connect with employers through live video interviews</p>
 
         <div className="grid gap-6">
           {sessions.map((session) => (

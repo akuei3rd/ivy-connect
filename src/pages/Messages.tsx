@@ -5,8 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { ArrowLeft, Send } from "lucide-react";
+import { Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { AppHeader } from "@/components/AppHeader";
 
 const Messages = () => {
   const navigate = useNavigate();
@@ -145,15 +146,10 @@ const Messages = () => {
   if (!profile) return null;
 
   return (
-    <div className="min-h-screen gradient-dark p-4">
-      <div className="max-w-6xl mx-auto">
-        <div className="flex items-center gap-4 mb-6">
-          <Button variant="ghost" onClick={() => navigate("/home")}>
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
-          </Button>
-          <h1 className="text-4xl font-display font-bold text-gradient">Messages</h1>
-        </div>
+    <div className="min-h-screen gradient-dark">
+      <AppHeader title="Messages" showBackButton backTo="/home" />
+      
+      <div className="max-w-6xl mx-auto p-4">
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-[calc(100vh-200px)]">
           {/* Connections List */}

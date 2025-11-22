@@ -6,8 +6,9 @@ import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Search, UserPlus, Check } from "lucide-react";
+import { Search, UserPlus, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { AppHeader } from "@/components/AppHeader";
 
 const Browse = () => {
   const navigate = useNavigate();
@@ -113,29 +114,18 @@ const Browse = () => {
 
   return (
     <div className="min-h-screen gradient-dark">
-      <nav className="border-b border-border/50 backdrop-blur-sm bg-card/30 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" onClick={() => navigate("/home")}>
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back
-            </Button>
-            <h1 className="text-2xl font-display font-bold text-gradient">Browse Profiles</h1>
-          </div>
-        </div>
-      </nav>
+      <AppHeader title="Browse Profiles" showBackButton backTo="/home" />
 
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="mb-6">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-            <Input
-              placeholder="Search by name, major, or school..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 bg-card/50 border-border/50"
-            />
-          </div>
+        <p className="text-muted-foreground mb-6">Connect with students from Ivy League schools</p>
+        <div className="relative mb-6">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+          <Input
+            placeholder="Search by name, major, or school..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10 bg-card/50 border-border/50"
+          />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
