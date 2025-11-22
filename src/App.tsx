@@ -11,6 +11,10 @@ import Room from "./pages/Room";
 import Dashboard from "./pages/Dashboard";
 import Home from "./pages/Home";
 import Messages from "./pages/Messages";
+import Jobs from "./pages/Jobs";
+import JobDetail from "./pages/JobDetail";
+import HiringSessions from "./pages/HiringSessions";
+import HiringSessionDetail from "./pages/HiringSessionDetail";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +34,10 @@ const App = () => (
           <Route path="/queue" element={<Queue />} />
           <Route path="/room/:roomId" element={<Room />} />
           <Route path="/messages" element={<Messages />} />
+          <Route path="/jobs" element={<Jobs />} />
+          <Route path="/jobs/:id" element={<JobDetail />} />
+          <Route path="/hiring-sessions" element={<HiringSessions />} />
+          <Route path="/hiring-sessions/:id" element={<HiringSessionDetail />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
