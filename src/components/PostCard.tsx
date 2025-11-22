@@ -141,6 +141,25 @@ export const PostCard = ({ post, currentUserId }: PostCardProps) => {
             </p>
           </div>
           <p className="text-foreground mb-4 whitespace-pre-wrap">{post.content}</p>
+          
+          {/* Media Display */}
+          {post.media_url && (
+            <div className="mb-4 rounded-lg overflow-hidden border border-border">
+              {post.media_type === "image" ? (
+                <img 
+                  src={post.media_url} 
+                  alt="Post media" 
+                  className="w-full max-h-[500px] object-cover"
+                />
+              ) : post.media_type === "video" ? (
+                <video 
+                  src={post.media_url} 
+                  controls 
+                  className="w-full max-h-[500px]"
+                />
+              ) : null}
+            </div>
+          )}
 
           {/* Engagement Stats */}
           <div className="flex gap-4 text-sm text-muted-foreground mb-3 pb-3 border-b border-border">
