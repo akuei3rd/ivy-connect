@@ -265,18 +265,30 @@ const Queue = () => {
 
     if (!myProfile) return;
 
-    // Get all waiting users with their profiles
+    // Get all waiting users
     const { data: potentialMatches } = await supabase
       .from("queue")
-      .select("*, profiles(*)")
+      .select("*")
       .eq("status", "waiting")
       .neq("user_id", userId);
 
     if (!potentialMatches || potentialMatches.length === 0) return;
 
+    // Fetch all their profiles
+    const userIds = potentialMatches.map(m => m.user_id);
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("*")
+      .in("id", userIds);
+
+    if (!profiles) return;
+
+    // Create a map for quick profile lookup
+    const profileMap = new Map(profiles.map(p => [p.id, p]));
+
     // Filter matches based on both users' criteria
-    const compatibleMatches = potentialMatches.filter((candidate: any) => {
-      const theirProfile = candidate.profiles;
+    const compatibleMatches = potentialMatches.filter((candidate) => {
+      const theirProfile = profileMap.get(candidate.user_id);
       if (!theirProfile) return false;
 
       // Check if their profile matches my filters (if I have any)
