@@ -46,6 +46,42 @@ export type Database = {
           },
         ]
       }
+      companies: {
+        Row: {
+          created_at: string | null
+          created_by: string
+          description: string | null
+          id: string
+          industry: string | null
+          logo_url: string | null
+          name: string
+          updated_at: string | null
+          website: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by: string
+          description?: string | null
+          id?: string
+          industry?: string | null
+          logo_url?: string | null
+          name: string
+          updated_at?: string | null
+          website?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string
+          description?: string | null
+          id?: string
+          industry?: string | null
+          logo_url?: string | null
+          name?: string
+          updated_at?: string | null
+          website?: string | null
+        }
+        Relationships: []
+      }
       connections: {
         Row: {
           created_at: string | null
@@ -72,6 +108,160 @@ export type Database = {
           user2_id?: string
         }
         Relationships: []
+      }
+      hiring_sessions: {
+        Row: {
+          company_id: string
+          created_at: string | null
+          created_by: string
+          description: string | null
+          id: string
+          job_id: string | null
+          max_candidates: number | null
+          session_date: string
+          slot_duration_minutes: number | null
+          status: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string | null
+          created_by: string
+          description?: string | null
+          id?: string
+          job_id?: string | null
+          max_candidates?: number | null
+          session_date: string
+          slot_duration_minutes?: number | null
+          status?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string | null
+          created_by?: string
+          description?: string | null
+          id?: string
+          job_id?: string | null
+          max_candidates?: number | null
+          session_date?: string
+          slot_duration_minutes?: number | null
+          status?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hiring_sessions_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hiring_sessions_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "job_postings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      job_applications: {
+        Row: {
+          cover_letter: string | null
+          created_at: string | null
+          id: string
+          job_id: string
+          resume_url: string | null
+          status: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          cover_letter?: string | null
+          created_at?: string | null
+          id?: string
+          job_id: string
+          resume_url?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          cover_letter?: string | null
+          created_at?: string | null
+          id?: string
+          job_id?: string
+          resume_url?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_applications_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "job_postings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      job_postings: {
+        Row: {
+          company_id: string
+          created_at: string | null
+          description: string
+          id: string
+          job_type: string | null
+          location: string | null
+          posted_by: string
+          requirements: string[] | null
+          salary_range: string | null
+          status: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string | null
+          description: string
+          id?: string
+          job_type?: string | null
+          location?: string | null
+          posted_by: string
+          requirements?: string[] | null
+          salary_range?: string | null
+          status?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string | null
+          description?: string
+          id?: string
+          job_type?: string | null
+          location?: string | null
+          posted_by?: string
+          requirements?: string[] | null
+          salary_range?: string | null
+          status?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_postings_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       matches: {
         Row: {
@@ -359,12 +549,131 @@ export type Database = {
           },
         ]
       }
+      session_registrations: {
+        Row: {
+          cover_letter: string | null
+          id: string
+          registered_at: string | null
+          resume_url: string
+          reviewed_at: string | null
+          session_id: string
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          cover_letter?: string | null
+          id?: string
+          registered_at?: string | null
+          resume_url: string
+          reviewed_at?: string | null
+          session_id: string
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          cover_letter?: string | null
+          id?: string
+          registered_at?: string | null
+          resume_url?: string
+          reviewed_at?: string | null
+          session_id?: string
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_registrations_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "hiring_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      session_time_slots: {
+        Row: {
+          created_at: string | null
+          end_time: string
+          id: string
+          registration_id: string
+          room_name: string | null
+          room_url: string | null
+          session_id: string
+          start_time: string
+          status: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          end_time: string
+          id?: string
+          registration_id: string
+          room_name?: string | null
+          room_url?: string | null
+          session_id: string
+          start_time: string
+          status?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          end_time?: string
+          id?: string
+          registration_id?: string
+          room_name?: string | null
+          room_url?: string | null
+          session_id?: string
+          start_time?: string
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_time_slots_registration_id_fkey"
+            columns: ["registration_id"]
+            isOneToOne: false
+            referencedRelation: "session_registrations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_time_slots_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "hiring_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          created_at: string | null
+          id: string
+          role: Database["public"]["Enums"]["user_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["user_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["user_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["user_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
       ivy_school:
@@ -376,6 +685,7 @@ export type Database = {
         | "Dartmouth College"
         | "Brown University"
         | "University of Pennsylvania"
+      user_role: "student" | "employer" | "admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -513,6 +823,7 @@ export const Constants = {
         "Brown University",
         "University of Pennsylvania",
       ],
+      user_role: ["student", "employer", "admin"],
     },
   },
 } as const
