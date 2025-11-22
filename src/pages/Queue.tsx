@@ -58,6 +58,10 @@ const Queue = () => {
     
     return () => {
       stopVideo();
+      // Clean up interval on unmount
+      if ((window as any).matchInterval) {
+        clearInterval((window as any).matchInterval);
+      }
     };
   }, []);
 
@@ -111,23 +115,14 @@ const Queue = () => {
 
     setUserId(session.user.id);
 
-    // Check if in queue
-    const { data: queueEntry } = await supabase
+    // Clean up any old queue entries when page loads
+    // User must explicitly click "Start Matching" to enter queue
+    await supabase
       .from("queue")
-      .select("*")
-      .eq("user_id", session.user.id)
-      .eq("status", "waiting")
-      .single();
+      .delete()
+      .eq("user_id", session.user.id);
 
-    if (queueEntry) {
-      setInQueue(true);
-      setFilters({
-        schools: queueEntry.school_filter || [],
-        classYears: queueEntry.class_year_filter?.map(String) || [],
-        majors: queueEntry.major_filter || [],
-      });
-    }
-
+    setInQueue(false);
     updateQueueCount();
   };
 
@@ -208,9 +203,6 @@ const Queue = () => {
       // Start video first
       await startVideo();
       
-      // First, delete any existing queue entry for this user to avoid unique constraint violation
-      await supabase.from("queue").delete().eq("user_id", userId);
-      
       const { error } = await supabase.from("queue").insert([{
         user_id: userId!,
         school_filter: filters.schools.length > 0 ? filters.schools as any : null,
@@ -231,8 +223,13 @@ const Queue = () => {
         description: "Looking for a match...",
       });
 
-      // Try to match immediately
-      await tryMatch();
+      // Start polling for matches
+      const matchInterval = setInterval(async () => {
+        await tryMatch();
+      }, 2000); // Check every 2 seconds
+
+      // Store interval ID for cleanup
+      (window as any).matchInterval = matchInterval;
     } catch (error: any) {
       stopVideo();
       toast({
@@ -357,6 +354,12 @@ const Queue = () => {
   };
 
   const leaveQueue = async () => {
+    // Clear match polling interval
+    if ((window as any).matchInterval) {
+      clearInterval((window as any).matchInterval);
+      (window as any).matchInterval = null;
+    }
+    
     await supabase.from("queue").delete().eq("user_id", userId);
     stopVideo();
     setInQueue(false);
