@@ -4,16 +4,33 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Textarea } from "@/components/ui/textarea";
-import { Heart, MessageCircle, Repeat2, Share2, Send } from "lucide-react";
+import { Heart, MessageCircle, Repeat2, Share2, Send, Trash2, MoreVertical } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface PostCardProps {
   post: any;
   currentUserId: string;
+  onPostDeleted?: () => void;
 }
 
-export const PostCard = ({ post, currentUserId }: PostCardProps) => {
+export const PostCard = ({ post, currentUserId, onPostDeleted }: PostCardProps) => {
   const [liked, setLiked] = useState(false);
   const [reposted, setReposted] = useState(false);
   const [likesCount, setLikesCount] = useState(0);
@@ -22,7 +39,10 @@ export const PostCard = ({ post, currentUserId }: PostCardProps) => {
   const [showComments, setShowComments] = useState(false);
   const [comments, setComments] = useState<any[]>([]);
   const [newComment, setNewComment] = useState("");
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const { toast } = useToast();
+
+  const isOwnPost = post.user_id === currentUserId;
 
   useEffect(() => {
     loadPostData();
@@ -119,6 +139,27 @@ export const PostCard = ({ post, currentUserId }: PostCardProps) => {
     toast({ title: "Link copied to clipboard!" });
   };
 
+  const handleDelete = async () => {
+    const { error } = await supabase
+      .from("posts")
+      .delete()
+      .eq("id", post.id)
+      .eq("user_id", currentUserId);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete post",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    toast({ title: "Post deleted successfully" });
+    setShowDeleteDialog(false);
+    onPostDeleted?.();
+  };
+
   return (
     <Card className="bg-card/80 backdrop-blur-sm border-border p-6 mb-4">
       <div className="flex gap-4">
@@ -131,14 +172,34 @@ export const PostCard = ({ post, currentUserId }: PostCardProps) => {
           </AvatarFallback>
         </Avatar>
         <div className="flex-1">
-          <div className="mb-3">
-            <h4 className="font-semibold text-foreground">{post.profiles?.full_name}</h4>
-            <p className="text-sm text-muted-foreground">
-              {post.profiles?.major} • {post.profiles?.school}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
-            </p>
+          <div className="flex items-start justify-between mb-3">
+            <div>
+              <h4 className="font-semibold text-foreground">{post.profiles?.full_name}</h4>
+              <p className="text-sm text-muted-foreground">
+                {post.profiles?.major} • {post.profiles?.school}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
+              </p>
+            </div>
+            {isOwnPost && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                    <MoreVertical className="w-4 h-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    onClick={() => setShowDeleteDialog(true)}
+                    className="text-destructive focus:text-destructive"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Delete Post
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
           <p className="text-foreground mb-4 whitespace-pre-wrap">{post.content}</p>
           
@@ -245,6 +306,23 @@ export const PostCard = ({ post, currentUserId }: PostCardProps) => {
           )}
         </div>
       </div>
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Post?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete your post and all its comments and likes.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 };
