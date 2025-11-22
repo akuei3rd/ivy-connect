@@ -4,23 +4,46 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { useToast } from "@/hooks/use-toast";
-import { Video, Users, TrendingUp, Sparkles, User, LogOut } from "lucide-react";
+import { Video, Users, LogOut, TrendingUp, MessageSquare, Home as HomeIcon } from "lucide-react";
+import { CreatePost } from "@/components/CreatePost";
+import { PostCard } from "@/components/PostCard";
 
 const Home = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [profile, setProfile] = useState<any>(null);
-  const [recentConnections, setRecentConnections] = useState<any[]>([]);
-  const [stats, setStats] = useState({ connections: 0, matches: 0, queueSize: 0 });
+  const [connections, setConnections] = useState<any[]>([]);
+  const [stats, setStats] = useState({ matches: 0, connections: 0 });
+  const [posts, setPosts] = useState<any[]>([]);
 
   useEffect(() => {
     checkAuth();
     loadData();
+    loadPosts();
+
+    // Realtime subscription for posts
+    const channel = supabase
+      .channel("posts-channel")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "posts",
+        },
+        () => loadPosts()
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const checkAuth = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
     if (!session) {
       navigate("/auth");
       return;
@@ -40,8 +63,23 @@ const Home = () => {
     setProfile(profileData);
   };
 
+  const loadPosts = async () => {
+    const { data } = await supabase
+      .from("posts")
+      .select(`
+        *,
+        profiles!posts_user_id_fkey(full_name, school, major)
+      `)
+      .order("created_at", { ascending: false })
+      .limit(20);
+
+    setPosts(data || []);
+  };
+
   const loadData = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
     if (!session) return;
 
     // Load recent connections
@@ -57,30 +95,21 @@ const Home = () => {
       .order("created_at", { ascending: false })
       .limit(5);
 
-    setRecentConnections(connectionsData || []);
+    setConnections(connectionsData || []);
 
     // Load stats
-    const { count: connectionsCount } = await supabase
+    const { count: matchCount } = await supabase
+      .from("matches")
+      .select("*", { count: "exact", head: true })
+      .or(`user1_id.eq.${session.user.id},user2_id.eq.${session.user.id}`);
+
+    const { count: connectionCount } = await supabase
       .from("connections")
       .select("*", { count: "exact", head: true })
       .or(`user1_id.eq.${session.user.id},user2_id.eq.${session.user.id}`)
       .eq("status", "accepted");
 
-    const { count: matchesCount } = await supabase
-      .from("matches")
-      .select("*", { count: "exact", head: true })
-      .or(`user1_id.eq.${session.user.id},user2_id.eq.${session.user.id}`);
-
-    const { count: queueCount } = await supabase
-      .from("queue")
-      .select("*", { count: "exact", head: true })
-      .eq("status", "waiting");
-
-    setStats({
-      connections: connectionsCount || 0,
-      matches: matchesCount || 0,
-      queueSize: queueCount || 0,
-    });
+    setStats({ matches: matchCount || 0, connections: connectionCount || 0 });
   };
 
   const handleSignOut = async () => {
@@ -89,169 +118,150 @@ const Home = () => {
   };
 
   const getConnectionPartner = (connection: any) => {
-    return connection.user1_id === profile?.id ? connection.user2 : connection.user1;
+    return connection.user1_id === profile?.id
+      ? connection.user2
+      : connection.user1;
   };
 
   if (!profile) return null;
 
   return (
-    <div className="min-h-screen gradient-ivy">
-      {/* Animated background */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '0s', animationDuration: '8s' }}></div>
-        <div className="absolute bottom-1/3 right-1/4 w-80 h-80 bg-accent/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s', animationDuration: '10s' }}></div>
-        <div className="absolute top-1/2 right-1/3 w-72 h-72 bg-primary/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '4s', animationDuration: '12s' }}></div>
-        <div className="absolute bottom-1/4 left-1/3 w-64 h-64 bg-gold/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '6s', animationDuration: '9s' }}></div>
-      </div>
-
-      {/* Header */}
-      <header className="relative z-10 border-b border-border/30 bg-background/50 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-6 h-6 text-gold" />
-            <h1 className="text-2xl font-bold text-gradient">ProTV</h1>
+    <div className="min-h-screen gradient-dark">
+      {/* Navigation */}
+      <nav className="border-b border-border/50 backdrop-blur-sm bg-card/30 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="flex justify-between items-center">
+            <h1 className="text-2xl font-display font-bold text-gradient">IvyConnect</h1>
+            <div className="flex gap-2">
+              <Button variant="ghost" onClick={() => navigate("/home")}>
+                <HomeIcon className="w-4 h-4 mr-2" />
+                Home
+              </Button>
+              <Button variant="ghost" onClick={() => navigate("/messages")}>
+                <MessageSquare className="w-4 h-4 mr-2" />
+                Messages
+              </Button>
+              <Button variant="outline" onClick={() => navigate("/queue")}>
+                <Video className="w-4 h-4 mr-2" />
+                Match
+              </Button>
+              <Button variant="outline" onClick={() => navigate("/dashboard")}>
+                Dashboard
+              </Button>
+              <Button variant="ghost" onClick={handleSignOut}>
+                <LogOut className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
-          <nav className="flex items-center gap-4">
-            <Button variant="ghost" onClick={() => navigate("/home")}>Home</Button>
-            <Button variant="ghost" onClick={() => navigate("/dashboard")}>Dashboard</Button>
-            <Button variant="ghost" onClick={() => navigate("/profile")}>
-              <User className="w-4 h-4" />
-            </Button>
-            <Button variant="outline" onClick={handleSignOut} size="sm">
-              <LogOut className="w-4 h-4" />
-            </Button>
-          </nav>
         </div>
-      </header>
+      </nav>
 
       {/* Main Content */}
-      <div className="relative z-10 max-w-7xl mx-auto px-4 py-8">
-        <div className="grid lg:grid-cols-3 gap-6">
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Left Sidebar - Profile Card */}
           <div className="space-y-6">
-            <Card className="bg-card/50 backdrop-blur-sm border-border/50 p-6">
-              <div className="text-center space-y-4">
-                <Avatar className="w-20 h-20 mx-auto">
-                  <AvatarFallback className="bg-primary text-primary-foreground text-2xl">
-                    {profile.full_name.split(" ").map((n: string) => n[0]).join("")}
+            <Card className="bg-card/80 backdrop-blur-sm border-border/50 p-6">
+              <div className="text-center">
+                <Avatar className="w-24 h-24 mx-auto mb-4">
+                  <AvatarFallback className="bg-foreground/10 text-foreground text-2xl">
+                    {profile?.full_name
+                      ?.split(" ")
+                      .map((n: string) => n[0])
+                      .join("") || "U"}
                   </AvatarFallback>
                 </Avatar>
-                <div>
-                  <h2 className="text-xl font-bold">{profile.full_name}</h2>
-                  <p className="text-sm text-muted-foreground">{profile.major}</p>
-                  <p className="text-xs text-muted-foreground">{profile.school}</p>
-                </div>
-                <div className="pt-4 border-t border-border/30">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Connections</span>
-                    <span className="font-semibold text-gold">{stats.connections}</span>
+                <h3 className="font-bold text-lg">{profile?.full_name}</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  {profile?.major} • Class of {profile?.class_year}
+                </p>
+                <div className="grid grid-cols-2 gap-4 pt-4 border-t border-border/50">
+                  <div>
+                    <p className="text-2xl font-bold text-foreground">{stats.connections}</p>
+                    <p className="text-xs text-muted-foreground">Connections</p>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-foreground">{stats.matches}</p>
+                    <p className="text-xs text-muted-foreground">Matches</p>
                   </div>
                 </div>
               </div>
             </Card>
 
-            <Card className="bg-card/50 backdrop-blur-sm border-border/50 p-6">
-              <h3 className="font-semibold mb-3 flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-gold" />
-                Network Stats
-              </h3>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Total Matches</span>
-                  <span className="font-semibold">{stats.matches}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Active Queue</span>
-                  <span className="font-semibold">{stats.queueSize} users</span>
-                </div>
+            <Card className="bg-card/80 backdrop-blur-sm border-border/50 p-6">
+              <div className="flex items-center gap-2 text-foreground mb-3">
+                <TrendingUp className="w-5 h-5" />
+                <h4 className="font-semibold">Quick Actions</h4>
+              </div>
+              <div className="space-y-2">
+                <Button
+                  variant="outline"
+                  className="w-full justify-start"
+                  onClick={() => navigate("/queue")}
+                >
+                  <Video className="w-4 h-4 mr-2" />
+                  Start Matching
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start"
+                  onClick={() => navigate("/messages")}
+                >
+                  <MessageSquare className="w-4 h-4 mr-2" />
+                  Messages
+                </Button>
               </div>
             </Card>
           </div>
 
-          {/* Main Feed */}
+          {/* Center - Post Feed */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Quick Actions */}
-            <Card className="bg-card/50 backdrop-blur-sm border-border/50 p-6">
-              <h2 className="text-2xl font-bold mb-4">Welcome back, {profile.full_name.split(" ")[0]}!</h2>
-              <div className="grid md:grid-cols-2 gap-4">
-                <Button 
-                  variant="gold" 
-                  size="lg" 
-                  className="w-full"
-                  onClick={() => navigate("/queue")}
-                >
-                  <Video className="w-5 h-5 mr-2" />
-                  Start Matching
-                </Button>
-                <Button 
-                  variant="hero" 
-                  size="lg" 
-                  className="w-full"
-                  onClick={() => navigate("/dashboard")}
-                >
-                  <Users className="w-5 h-5 mr-2" />
-                  View Dashboard
-                </Button>
-              </div>
-            </Card>
+            {profile && <CreatePost profile={profile} onPostCreated={loadPosts} />}
+            
+            {posts.length === 0 ? (
+              <Card className="bg-card/80 backdrop-blur-sm border-border/50 p-12 text-center">
+                <p className="text-muted-foreground">No posts yet. Be the first to share something!</p>
+              </Card>
+            ) : (
+              posts.map((post) => <PostCard key={post.id} post={post} currentUserId={profile?.id} />)
+            )}
+          </div>
 
-            {/* Recent Connections */}
-            <Card className="bg-card/50 backdrop-blur-sm border-border/50 p-6">
-              <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-                <Users className="w-5 h-5 text-gold" />
+          {/* Right Sidebar - Recent Connections */}
+          <div className="space-y-6">
+            <Card className="bg-card/80 backdrop-blur-sm border-border/50 p-6">
+              <h3 className="font-bold mb-4 flex items-center gap-2">
+                <Users className="w-5 h-5" />
                 Recent Connections
               </h3>
-              {recentConnections.length === 0 ? (
-                <div className="text-center py-8">
-                  <p className="text-muted-foreground mb-4">No connections yet</p>
-                  <Button variant="outline" onClick={() => navigate("/queue")}>
-                    Start Networking
-                  </Button>
-                </div>
+              {connections.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No connections yet</p>
               ) : (
                 <div className="space-y-3">
-                  {recentConnections.map((connection) => {
+                  {connections.map((connection) => {
                     const partner = getConnectionPartner(connection);
                     return (
                       <div
                         key={connection.id}
-                        className="flex items-center gap-4 p-4 bg-background/50 rounded-lg hover:bg-background/70 transition-all hover:scale-[1.02]"
+                        className="flex items-center gap-3 p-2 rounded-lg hover:bg-foreground/5 transition-colors cursor-pointer"
                       >
-                        <Avatar>
-                          <AvatarFallback className="bg-primary text-primary-foreground">
-                            {partner.full_name.split(" ").map((n: string) => n[0]).join("")}
+                        <Avatar className="w-10 h-10">
+                          <AvatarFallback className="bg-foreground/10 text-foreground text-sm">
+                            {partner.full_name
+                              .split(" ")
+                              .map((n: string) => n[0])
+                              .join("")}
                           </AvatarFallback>
                         </Avatar>
-                        <div className="flex-1">
-                          <p className="font-semibold">{partner.full_name}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {partner.major} • {partner.school}
-                          </p>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-sm truncate">{partner.full_name}</p>
+                          <p className="text-xs text-muted-foreground truncate">{partner.major}</p>
                         </div>
                       </div>
                     );
                   })}
-                  <Button 
-                    variant="ghost" 
-                    className="w-full"
-                    onClick={() => navigate("/dashboard")}
-                  >
-                    View All Connections
-                  </Button>
                 </div>
               )}
-            </Card>
-
-            {/* Activity Feed Placeholder */}
-            <Card className="bg-card/50 backdrop-blur-sm border-border/50 p-6">
-              <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-gold" />
-                What's Happening
-              </h3>
-              <div className="text-center py-12 text-muted-foreground">
-                <p className="mb-2">Your network activity will appear here</p>
-                <p className="text-sm">Start matching to build your Ivy League network!</p>
-              </div>
             </Card>
           </div>
         </div>
