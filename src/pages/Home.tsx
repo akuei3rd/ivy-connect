@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Video, Users, LogOut, TrendingUp, MessageSquare, Home as HomeIcon, Briefcase, Video as VideoIcon, Building2 } from "lucide-react";
+import { Video, Users, LogOut, TrendingUp, MessageSquare, Home as HomeIcon, Briefcase, Video as VideoIcon, Building2, UserSearch } from "lucide-react";
 import { CreatePost } from "@/components/CreatePost";
 import { PostCard } from "@/components/PostCard";
 import { NavLink } from "@/components/NavLink";
@@ -145,12 +145,13 @@ const Home = () => {
           <div className="flex justify-between items-center mb-4">
             <h1 className="text-2xl font-display font-bold text-gradient">ProTV</h1>
             <div className="flex gap-2">
+              <Button variant="outline" onClick={() => navigate("/browse")}>
+                <UserSearch className="w-4 h-4 mr-2" />
+                Browse
+              </Button>
               <Button variant="outline" onClick={() => navigate("/queue")}>
                 <Video className="w-4 h-4 mr-2" />
                 Match
-              </Button>
-              <Button variant="outline" onClick={() => navigate("/dashboard")}>
-                Dashboard
               </Button>
               <Button variant="ghost" onClick={handleSignOut}>
                 <LogOut className="w-4 h-4" />

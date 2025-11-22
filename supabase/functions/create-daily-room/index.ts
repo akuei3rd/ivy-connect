@@ -30,9 +30,11 @@ serve(async (req) => {
         name: roomName,
         properties: {
           max_participants: 2,
-          enable_chat: false,
+          enable_chat: true,
           enable_screenshare: false,
           enable_recording: false,
+          start_audio_off: false,
+          start_video_off: false,
           exp: Math.floor(Date.now() / 1000) + 3600, // 1 hour expiry
         },
       }),
