@@ -2,9 +2,11 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useNavigate } from "react-router-dom";
 import { Calendar, Users, Plus } from "lucide-react";
 import { format } from "date-fns";
+import { CreateHiringSessionForm } from "./CreateHiringSessionForm";
 
 interface HiringSessionsManagerProps {
   companyId: string;
@@ -13,6 +15,7 @@ interface HiringSessionsManagerProps {
 
 export function HiringSessionsManager({ companyId, userId }: HiringSessionsManagerProps) {
   const [sessions, setSessions] = useState<any[]>([]);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -39,10 +42,27 @@ export function HiringSessionsManager({ companyId, userId }: HiringSessionsManag
           <h2 className="text-3xl font-bold text-foreground mb-2">Hiring Sessions</h2>
           <p className="text-muted-foreground">Manage video interview sessions</p>
         </div>
-        <Button onClick={() => navigate("/hiring-sessions")} className="gap-2">
-          <Plus className="w-4 h-4" />
-          Create Session
-        </Button>
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <DialogTrigger asChild>
+            <Button className="gap-2">
+              <Plus className="w-4 h-4" />
+              Create Session
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Create Hiring Session</DialogTitle>
+            </DialogHeader>
+            <CreateHiringSessionForm
+              companyId={companyId}
+              userId={userId}
+              onSuccess={() => {
+                setDialogOpen(false);
+                loadSessions();
+              }}
+            />
+          </DialogContent>
+        </Dialog>
       </div>
 
       <div className="grid gap-4">
@@ -72,10 +92,27 @@ export function HiringSessionsManager({ companyId, userId }: HiringSessionsManag
           <Card className="p-12 text-center bg-card">
             <h3 className="text-lg font-semibold text-foreground mb-2">No hiring sessions yet</h3>
             <p className="text-muted-foreground mb-4">Create sessions for video interviews with candidates</p>
-            <Button onClick={() => navigate("/hiring-sessions")} className="gap-2">
-              <Plus className="w-4 h-4" />
-              Create First Session
-            </Button>
+            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+              <DialogTrigger asChild>
+                <Button className="gap-2">
+                  <Plus className="w-4 h-4" />
+                  Create First Session
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Create Hiring Session</DialogTitle>
+                </DialogHeader>
+                <CreateHiringSessionForm
+                  companyId={companyId}
+                  userId={userId}
+                  onSuccess={() => {
+                    setDialogOpen(false);
+                    loadSessions();
+                  }}
+                />
+              </DialogContent>
+            </Dialog>
           </Card>
         )}
       </div>
