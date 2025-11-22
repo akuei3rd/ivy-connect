@@ -256,27 +256,61 @@ const Queue = () => {
 
     if (!myQueue) return;
 
-    // Build query with filters if they exist
-    let query = supabase
-      .from("queue")
+    // Get my profile to check against other users' filters
+    const { data: myProfile } = await supabase
+      .from("profiles")
       .select("*")
+      .eq("id", userId)
+      .single();
+
+    if (!myProfile) return;
+
+    // Get all waiting users with their profiles
+    const { data: potentialMatches } = await supabase
+      .from("queue")
+      .select("*, profiles(*)")
       .eq("status", "waiting")
       .neq("user_id", userId);
 
-    // Apply filters if they're set
-    if (myQueue.school_filter && myQueue.school_filter.length > 0) {
-      query = query.overlaps("school_filter", myQueue.school_filter);
-    }
-    
-    if (myQueue.class_year_filter && myQueue.class_year_filter.length > 0) {
-      query = query.overlaps("class_year_filter", myQueue.class_year_filter);
-    }
-    
-    if (myQueue.major_filter && myQueue.major_filter.length > 0) {
-      query = query.overlaps("major_filter", myQueue.major_filter);
-    }
+    if (!potentialMatches || potentialMatches.length === 0) return;
 
-    const { data: potentialMatches } = await query.limit(1);
+    // Filter matches based on both users' criteria
+    const compatibleMatches = potentialMatches.filter((candidate: any) => {
+      const theirProfile = candidate.profiles;
+      if (!theirProfile) return false;
+
+      // Check if their profile matches my filters (if I have any)
+      if (myQueue.school_filter && myQueue.school_filter.length > 0) {
+        if (!myQueue.school_filter.includes(theirProfile.school)) return false;
+      }
+      
+      if (myQueue.class_year_filter && myQueue.class_year_filter.length > 0) {
+        if (!myQueue.class_year_filter.includes(theirProfile.class_year)) return false;
+      }
+      
+      if (myQueue.major_filter && myQueue.major_filter.length > 0) {
+        if (!myQueue.major_filter.includes(theirProfile.major)) return false;
+      }
+
+      // Check if my profile matches their filters (if they have any)
+      if (candidate.school_filter && candidate.school_filter.length > 0) {
+        if (!candidate.school_filter.includes(myProfile.school)) return false;
+      }
+      
+      if (candidate.class_year_filter && candidate.class_year_filter.length > 0) {
+        if (!candidate.class_year_filter.includes(myProfile.class_year)) return false;
+      }
+      
+      if (candidate.major_filter && candidate.major_filter.length > 0) {
+        if (!candidate.major_filter.includes(myProfile.major)) return false;
+      }
+
+      return true;
+    });
+
+    if (compatibleMatches.length === 0) return;
+    
+    const match = compatibleMatches[0];
 
     if (potentialMatches && potentialMatches.length > 0) {
       const match = potentialMatches[0];
