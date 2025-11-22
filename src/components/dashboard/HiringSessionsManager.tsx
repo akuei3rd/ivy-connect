@@ -70,7 +70,7 @@ export function HiringSessionsManager({ companyId, userId }: HiringSessionsManag
           <Card
             key={session.id}
             className="p-6 bg-card border-border hover:shadow-lg transition-shadow cursor-pointer"
-            onClick={() => navigate(`/hiring-sessions/${session.id}`)}
+            onClick={() => navigate(`/dashboard/sessions/${session.id}`)}
           >
             <h3 className="text-xl font-semibold text-foreground mb-2">{session.title}</h3>
             <p className="text-sm text-muted-foreground mb-4">{session.description}</p>
