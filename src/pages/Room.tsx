@@ -368,11 +368,12 @@ const Room = () => {
 
             <Button 
               size="lg"
-              className="bg-foreground text-background hover:bg-foreground/90 shadow-glow"
+              variant="default"
+              className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-glow"
               onClick={handleNext}
             >
               <SkipForward className="w-5 h-5 mr-2" />
-              Next Match
+              Skip & Find Next
             </Button>
           </div>
         </div>
