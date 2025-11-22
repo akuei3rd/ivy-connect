@@ -256,13 +256,27 @@ const Queue = () => {
 
     if (!myQueue) return;
 
-    // Find a match - simple algorithm without complex filtering
-    const { data: potentialMatches } = await supabase
+    // Build query with filters if they exist
+    let query = supabase
       .from("queue")
       .select("*")
       .eq("status", "waiting")
-      .neq("user_id", userId)
-      .limit(1);
+      .neq("user_id", userId);
+
+    // Apply filters if they're set
+    if (myQueue.school_filter && myQueue.school_filter.length > 0) {
+      query = query.overlaps("school_filter", myQueue.school_filter);
+    }
+    
+    if (myQueue.class_year_filter && myQueue.class_year_filter.length > 0) {
+      query = query.overlaps("class_year_filter", myQueue.class_year_filter);
+    }
+    
+    if (myQueue.major_filter && myQueue.major_filter.length > 0) {
+      query = query.overlaps("major_filter", myQueue.major_filter);
+    }
+
+    const { data: potentialMatches } = await query.limit(1);
 
     if (potentialMatches && potentialMatches.length > 0) {
       const match = potentialMatches[0];
