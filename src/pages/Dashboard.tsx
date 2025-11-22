@@ -1,221 +1,151 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
-import { User, Users, Video, LogOut } from "lucide-react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useNavigate } from "react-router-dom";
+import { BarChart3, Briefcase, Users, Calendar, Building2, Settings } from "lucide-react";
+import { Overview } from "@/components/dashboard/Overview";
+import { JobPostings } from "@/components/dashboard/JobPostings";
+import { Applications } from "@/components/dashboard/Applications";
+import { HiringSessionsManager } from "@/components/dashboard/HiringSessionsManager";
+import { CompanyProfile } from "@/components/dashboard/CompanyProfile";
+import { TeamManagement } from "@/components/dashboard/TeamManagement";
 
-const Dashboard = () => {
+export default function Dashboard() {
+  const [user, setUser] = useState<any>(null);
+  const [company, setCompany] = useState<any>(null);
+  const [isEmployer, setIsEmployer] = useState(false);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  const { toast } = useToast();
-  const [profile, setProfile] = useState<any>(null);
-  const [connections, setConnections] = useState<any[]>([]);
-  const [matchCount, setMatchCount] = useState(0);
 
   useEffect(() => {
     checkAuth();
-    loadConnections();
-    loadMatchCount();
   }, []);
 
   const checkAuth = async () => {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-
+    const { data: { session } } = await supabase.auth.getSession();
+    
     if (!session) {
       navigate("/auth");
       return;
     }
 
-    const { data: profileData } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", session.user.id)
+    setUser(session.user);
+
+    // Check if user is an employer
+    const { data: roles } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", session.user.id)
+      .eq("role", "employer")
       .single();
 
-    if (!profileData) {
-      navigate("/profile");
+    if (!roles) {
+      navigate("/home");
       return;
     }
 
-    setProfile(profileData);
+    setIsEmployer(true);
+
+    // Load company
+    const { data: companyData } = await supabase
+      .from("companies")
+      .select("*")
+      .eq("created_by", session.user.id)
+      .single();
+
+    setCompany(companyData);
+    setLoading(false);
   };
 
-  const loadConnections = async () => {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    if (!session) return;
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
-    const { data } = await supabase
-      .from("connections")
-      .select(`
-        *,
-        user1:profiles!connections_user1_id_fkey(full_name, school, major),
-        user2:profiles!connections_user2_id_fkey(full_name, school, major)
-      `)
-      .or(`user1_id.eq.${session.user.id},user2_id.eq.${session.user.id}`)
-      .eq("status", "accepted")
-      .order("created_at", { ascending: false });
-
-    setConnections(data || []);
-  };
-
-  const loadMatchCount = async () => {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    if (!session) return;
-
-    const { count } = await supabase
-      .from("matches")
-      .select("*", { count: "exact", head: true })
-      .or(`user1_id.eq.${session.user.id},user2_id.eq.${session.user.id}`);
-
-    setMatchCount(count || 0);
-  };
-
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    navigate("/");
-  };
-
-  if (!profile) return null;
-
-  const getConnectionPartner = (connection: any) => {
-    return connection.user1_id === profile.id
-      ? connection.user2
-      : connection.user1;
-  };
+  if (!isEmployer) {
+    return null;
+  }
 
   return (
-    <div className="min-h-screen gradient-dark p-4">
-      <div className="max-w-6xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex justify-between items-center">
-          <h1 className="text-4xl font-display font-bold text-gradient">Dashboard</h1>
-          <div className="flex gap-2">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+      <div className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Building2 className="w-8 h-8 text-primary" />
+              <div>
+                <h1 className="text-2xl font-bold text-foreground">Employer Dashboard</h1>
+                {company && <p className="text-sm text-muted-foreground">{company.name}</p>}
+              </div>
+            </div>
             <Button variant="outline" onClick={() => navigate("/home")}>
-              Home
-            </Button>
-            <Button variant="outline" onClick={handleSignOut}>
-              <LogOut className="w-4 h-4 mr-2" />
-              Sign Out
+              Back to Home
             </Button>
           </div>
         </div>
+      </div>
 
-        {/* Profile Card */}
-        <Card className="bg-card/50 backdrop-blur-sm border-border/50 p-6">
-          <div className="flex items-center gap-4">
-            <Avatar className="w-20 h-20">
-              <AvatarFallback className="bg-primary text-primary-foreground text-2xl">
-                {profile.full_name
-                  .split(" ")
-                  .map((n: string) => n[0])
-                  .join("")}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1">
-              <h2 className="text-2xl font-bold">{profile.full_name}</h2>
-              <p className="text-muted-foreground">
-                {profile.major} • Class of {profile.class_year}
-              </p>
-              <p className="text-sm text-muted-foreground">{profile.school}</p>
-            </div>
-            <Button 
-              className="bg-foreground text-background hover:bg-foreground/90 shadow-glow"
-              onClick={() => navigate("/queue")}
-            >
-              <Video className="w-4 h-4 mr-2" />
-              Start Matching
-            </Button>
-          </div>
-        </Card>
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <Tabs defaultValue="overview" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-6 lg:w-auto">
+            <TabsTrigger value="overview" className="gap-2">
+              <BarChart3 className="w-4 h-4" />
+              <span className="hidden sm:inline">Overview</span>
+            </TabsTrigger>
+            <TabsTrigger value="jobs" className="gap-2">
+              <Briefcase className="w-4 h-4" />
+              <span className="hidden sm:inline">Jobs</span>
+            </TabsTrigger>
+            <TabsTrigger value="applications" className="gap-2">
+              <Users className="w-4 h-4" />
+              <span className="hidden sm:inline">Applications</span>
+            </TabsTrigger>
+            <TabsTrigger value="sessions" className="gap-2">
+              <Calendar className="w-4 h-4" />
+              <span className="hidden sm:inline">Sessions</span>
+            </TabsTrigger>
+            <TabsTrigger value="company" className="gap-2">
+              <Building2 className="w-4 h-4" />
+              <span className="hidden sm:inline">Company</span>
+            </TabsTrigger>
+            <TabsTrigger value="team" className="gap-2">
+              <Settings className="w-4 h-4" />
+              <span className="hidden sm:inline">Team</span>
+            </TabsTrigger>
+          </TabsList>
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card className="bg-card/50 backdrop-blur-sm border-border/50 p-6">
-            <div className="flex items-center gap-3">
-              <div className="p-3 bg-foreground/10 rounded-lg">
-                <Users className="w-6 h-6 text-foreground" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{connections.length}</p>
-                <p className="text-sm text-muted-foreground">Connections</p>
-              </div>
-            </div>
-          </Card>
+          <TabsContent value="overview">
+            <Overview companyId={company?.id} />
+          </TabsContent>
 
-          <Card className="bg-card/50 backdrop-blur-sm border-border/50 p-6">
-            <div className="flex items-center gap-3">
-              <div className="p-3 bg-foreground/10 rounded-lg">
-                <Video className="w-6 h-6 text-foreground" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{matchCount}</p>
-                <p className="text-sm text-muted-foreground">Total Matches</p>
-              </div>
-            </div>
-          </Card>
+          <TabsContent value="jobs">
+            <JobPostings companyId={company?.id} userId={user?.id} />
+          </TabsContent>
 
-          <Card className="bg-card/50 backdrop-blur-sm border-border/50 p-6">
-            <div className="flex items-center gap-3">
-              <div className="p-3 bg-foreground/10 rounded-lg">
-                <User className="w-6 h-6 text-foreground" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">
-                  {profile.interests?.length || 0}
-                </p>
-                <p className="text-sm text-muted-foreground">Interests</p>
-              </div>
-            </div>
-          </Card>
-        </div>
+          <TabsContent value="applications">
+            <Applications companyId={company?.id} />
+          </TabsContent>
 
-        {/* Connections List */}
-        <Card className="bg-card/50 backdrop-blur-sm border-border/50 p-6">
-          <h3 className="text-xl font-bold mb-4">Your Connections</h3>
-          {connections.length === 0 ? (
-            <p className="text-muted-foreground text-center py-8">
-              No connections yet. Start matching to build your network!
-            </p>
-          ) : (
-            <div className="space-y-3">
-              {connections.map((connection) => {
-                const partner = getConnectionPartner(connection);
-                return (
-                  <div
-                    key={connection.id}
-                    className="flex items-center gap-4 p-4 bg-background/50 rounded-lg hover:bg-background/70 transition-colors"
-                  >
-                    <Avatar>
-                      <AvatarFallback className="bg-primary text-primary-foreground">
-                        {partner.full_name
-                          .split(" ")
-                          .map((n: string) => n[0])
-                          .join("")}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <p className="font-semibold">{partner.full_name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {partner.major} • {partner.school}
-                      </p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </Card>
+          <TabsContent value="sessions">
+            <HiringSessionsManager companyId={company?.id} userId={user?.id} />
+          </TabsContent>
+
+          <TabsContent value="company">
+            <CompanyProfile company={company} onUpdate={checkAuth} />
+          </TabsContent>
+
+          <TabsContent value="team">
+            <TeamManagement companyId={company?.id} userId={user?.id} />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
-};
-
-export default Dashboard;
+}

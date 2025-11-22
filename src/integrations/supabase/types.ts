@@ -82,6 +82,47 @@ export type Database = {
         }
         Relationships: []
       }
+      company_members: {
+        Row: {
+          company_id: string
+          created_at: string | null
+          id: string
+          invited_by: string
+          joined_at: string | null
+          permissions: string[] | null
+          role: string
+          user_id: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string | null
+          id?: string
+          invited_by: string
+          joined_at?: string | null
+          permissions?: string[] | null
+          role?: string
+          user_id: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string | null
+          id?: string
+          invited_by?: string
+          joined_at?: string | null
+          permissions?: string[] | null
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_members_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       connections: {
         Row: {
           created_at: string | null
@@ -174,31 +215,43 @@ export type Database = {
           cover_letter: string | null
           created_at: string | null
           id: string
+          interview_scheduled: boolean | null
           job_id: string
+          notes: string | null
+          rating: number | null
           resume_url: string | null
           status: string | null
           updated_at: string | null
           user_id: string
+          viewed_at: string | null
         }
         Insert: {
           cover_letter?: string | null
           created_at?: string | null
           id?: string
+          interview_scheduled?: boolean | null
           job_id: string
+          notes?: string | null
+          rating?: number | null
           resume_url?: string | null
           status?: string | null
           updated_at?: string | null
           user_id: string
+          viewed_at?: string | null
         }
         Update: {
           cover_letter?: string | null
           created_at?: string | null
           id?: string
+          interview_scheduled?: boolean | null
           job_id?: string
+          notes?: string | null
+          rating?: number | null
           resume_url?: string | null
           status?: string | null
           updated_at?: string | null
           user_id?: string
+          viewed_at?: string | null
         }
         Relationships: [
           {
@@ -221,9 +274,12 @@ export type Database = {
           posted_by: string
           requirements: string[] | null
           salary_range: string | null
+          seniority_level: string | null
+          skills: string[] | null
           status: string | null
           title: string
           updated_at: string | null
+          visibility: string | null
         }
         Insert: {
           company_id: string
@@ -235,9 +291,12 @@ export type Database = {
           posted_by: string
           requirements?: string[] | null
           salary_range?: string | null
+          seniority_level?: string | null
+          skills?: string[] | null
           status?: string | null
           title: string
           updated_at?: string | null
+          visibility?: string | null
         }
         Update: {
           company_id?: string
@@ -249,9 +308,12 @@ export type Database = {
           posted_by?: string
           requirements?: string[] | null
           salary_range?: string | null
+          seniority_level?: string | null
+          skills?: string[] | null
           status?: string | null
           title?: string
           updated_at?: string | null
+          visibility?: string | null
         }
         Relationships: [
           {

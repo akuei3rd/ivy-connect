@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Video, Users, LogOut, TrendingUp, MessageSquare, Home as HomeIcon, Briefcase, Video as VideoIcon } from "lucide-react";
+import { Video, Users, LogOut, TrendingUp, MessageSquare, Home as HomeIcon, Briefcase, Video as VideoIcon, Building2 } from "lucide-react";
 import { CreatePost } from "@/components/CreatePost";
 import { PostCard } from "@/components/PostCard";
 import { NavLink } from "@/components/NavLink";
@@ -15,6 +15,7 @@ const Home = () => {
   const [connections, setConnections] = useState<any[]>([]);
   const [stats, setStats] = useState({ matches: 0, connections: 0 });
   const [posts, setPosts] = useState<any[]>([]);
+  const [isEmployer, setIsEmployer] = useState(false);
 
   useEffect(() => {
     checkAuth();
@@ -62,6 +63,16 @@ const Home = () => {
     }
 
     setProfile(profileData);
+
+    // Check if user is an employer
+    const { data: roles } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", session.user.id)
+      .eq("role", "employer")
+      .single();
+    
+    setIsEmployer(!!roles);
   };
 
   const loadPosts = async () => {
@@ -150,6 +161,7 @@ const Home = () => {
             <NavLink to="/home" icon={<HomeIcon className="w-4 h-4" />}>Feed</NavLink>
             <NavLink to="/jobs" icon={<Briefcase className="w-4 h-4" />}>Jobs</NavLink>
             <NavLink to="/hiring-sessions" icon={<VideoIcon className="w-4 h-4" />}>Hiring Sessions</NavLink>
+            {isEmployer && <NavLink to="/dashboard" icon={<Building2 className="w-4 h-4" />}>Dashboard</NavLink>}
             <NavLink to="/messages" icon={<MessageSquare className="w-4 h-4" />}>Messages</NavLink>
           </div>
         </div>
