@@ -238,23 +238,13 @@ const Queue = () => {
 
     if (!myQueue) return;
 
-    // Find a match
-    let query = supabase
+    // Find a match - simple algorithm without complex filtering
+    const { data: potentialMatches } = await supabase
       .from("queue")
       .select("*")
       .eq("status", "waiting")
       .neq("user_id", userId)
       .limit(1);
-
-    // Apply filters if any
-    if (myQueue.school_filter && myQueue.school_filter.length > 0) {
-      // Match users who either have no filter or match our filter
-      query = query.or(
-        `school_filter.is.null,school_filter.cs.{${myQueue.school_filter.join(",")}}`
-      );
-    }
-
-    const { data: potentialMatches } = await query;
 
     if (potentialMatches && potentialMatches.length > 0) {
       const match = potentialMatches[0];
@@ -268,10 +258,23 @@ const Queue = () => {
         status: "active",
       });
 
-      if (matchError) throw matchError;
+      if (matchError) {
+        console.error("Match creation error:", matchError);
+        toast({
+          title: "Error",
+          description: "Failed to create match",
+          variant: "destructive",
+        });
+        return;
+      }
 
       // Delete both queue entries
       await supabase.from("queue").delete().in("user_id", [userId, match.user_id]);
+      
+      toast({
+        title: "Match Found!",
+        description: "Connecting you now...",
+      });
     }
   };
 
